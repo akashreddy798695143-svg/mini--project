@@ -189,9 +189,9 @@ export function CheckoutPage() {
   }, [toast])
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
-      fetchAddresses()
-    }
+    if (!auth.isAuthenticated) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchAddresses()
   }, [auth.isAuthenticated, fetchAddresses])
 
   // Redirect if cart is empty (unless on confirmation)

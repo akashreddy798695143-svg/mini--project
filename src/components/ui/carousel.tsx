@@ -93,14 +93,22 @@ function Carousel({
     setApi(api)
   }, [api, setApi])
 
+  React.useLayoutEffect(() => {
+    if (!api) return
+    // Initialize scroll state
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCanScrollPrev(api.canScrollPrev())
+    setCanScrollNext(api.canScrollNext())
+  }, [api])
+
   React.useEffect(() => {
     if (!api) return
-    onSelect(api)
     api.on("reInit", onSelect)
     api.on("select", onSelect)
 
     return () => {
       api?.off("select", onSelect)
+      api?.off("reInit", onSelect)
     }
   }, [api, onSelect])
 
