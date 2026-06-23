@@ -554,7 +554,7 @@ export default function Homepage() {
         setFlashSaleProducts((flashRes.products || []).map(normalizeProduct))
         setTopBrands((brandRes.brands || []).slice(0, 12))
       } catch (err) {
-        console.warn('Homepage data load failed:', err)
+        // Homepage fetch failures are handled by fallback UI states.
       } finally {
         if (!cancelled) setIsLoading(false)
       }

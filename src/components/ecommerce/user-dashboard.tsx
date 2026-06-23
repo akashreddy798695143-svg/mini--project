@@ -470,6 +470,7 @@ function OrdersTab() {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('All')
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
   const fetchOrders = () => {
     setLoading(true)
@@ -480,7 +481,17 @@ function OrdersTab() {
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setOrders([])
+      setAddresses({})
+      setError('Please sign in to view your orders.')
+      setLoading(false)
+      return
+    }
+
     let mounted = true
+    setLoading(true)
+    setError(null)
     Promise.all([
       apiGet<{ orders: ApiOrder[] }>('/api/orders?limit=50'),
       apiGet<{ addresses: ApiAddress[] }>('/api/addresses').catch(() => ({ addresses: [] })),
@@ -499,7 +510,7 @@ function OrdersTab() {
       })
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
-  }, [reloadKey])
+  }, [reloadKey, isAuthenticated])
 
   const filteredOrders = useMemo(() => {
     if (filter === 'All') return orders

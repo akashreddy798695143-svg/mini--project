@@ -69,7 +69,8 @@ export function Header() {
   // Auto-sync cart & wishlist from server on auth state changes (login/logout).
   useStoreSync()
 
-  const { theme, setTheme } = useTheme()
+  const { theme, resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
   const navigate = useNavigationStore((s) => s.navigate)
   const setSearchQuery = useNavigationStore((s) => s.setSearchQuery)
   const searchQuery = useNavigationStore((s) => s.searchQuery)
@@ -129,6 +130,13 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const currentTheme = mounted ? (resolvedTheme || theme) : 'light'
+  const isDarkTheme = currentTheme === 'dark'
+
   const handleSearch = (query?: string) => {
     const q = query ?? searchQuery
     if (q.trim()) {
@@ -157,7 +165,7 @@ export function Header() {
   }
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
+    setTheme(isDarkTheme ? 'light' : 'dark')
   }
 
   const userInitials = user?.name
@@ -326,7 +334,8 @@ export function Header() {
               className="hidden sm:flex size-10 rounded-xl"
             >
               <AnimatePresence mode="wait" initial={false}>
-                {theme === 'dark' ? (
+              {mounted ? (
+                isDarkTheme ? (
                   <motion.div
                     key="sun"
                     initial={{ rotate: -90, scale: 0 }}
@@ -346,8 +355,18 @@ export function Header() {
                   >
                     <Moon className="size-4" />
                   </motion.div>
-                )}
-              </AnimatePresence>
+                )
+              ) : (
+                <motion.div
+                  key="initial"
+                  initial={false}
+                  animate={{ opacity: 1 }}
+                  className="text-muted-foreground"
+                >
+                  <Sun className="size-4" />
+                </motion.div>
+              )}
+            </AnimatePresence>
               <span className="sr-only">Toggle theme</span>
             </Button>
 
@@ -746,12 +765,16 @@ export function Header() {
                   onClick={toggleTheme}
                   className="gap-1.5 text-xs"
                 >
-                  {theme === 'dark' ? (
-                    <Sun className="size-3.5" />
+                  {mounted ? (
+                    isDarkTheme ? (
+                      <Sun className="size-3.5" />
+                    ) : (
+                      <Moon className="size-3.5" />
+                    )
                   ) : (
-                    <Moon className="size-3.5" />
+                    <Sun className="size-3.5" />
                   )}
-                  {theme === 'dark' ? 'Light' : 'Dark'}
+                  {mounted ? (isDarkTheme ? 'Light' : 'Dark') : 'Dark'}
                 </Button>
               </div>
             </div>
