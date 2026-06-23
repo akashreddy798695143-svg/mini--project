@@ -527,7 +527,6 @@ export default function Homepage() {
     async function loadData() {
       setIsLoading(true)
       try {
-        console.log('📡 Starting homepage data load...')
         const [
           catRes,
           featRes,
@@ -545,15 +544,6 @@ export default function Homepage() {
           apiGet<{ products: ApiProduct[] }>('/api/products?discount=20&limit=8'),
           apiGet<{ brands: Brand[] }>('/api/brands'),
         ])
-        console.log('✅ All APIs responded:', {
-          categories: (catRes.categories || catRes.allCategories || []).length,
-          featured: featRes.products?.length || 0,
-          trending: trendRes.products?.length || 0,
-          newArrivals: newArrRes.products?.length || 0,
-          bestSellers: bestRes.products?.length || 0,
-          flashSale: flashRes.products?.length || 0,
-          brands: brandRes.brands?.length || 0,
-        })
         if (cancelled) return
 
         setTopLevelCategories(catRes.categories || catRes.allCategories || [])
@@ -563,9 +553,8 @@ export default function Homepage() {
         setBestSellers((bestRes.products || []).map(normalizeProduct))
         setFlashSaleProducts((flashRes.products || []).map(normalizeProduct))
         setTopBrands((brandRes.brands || []).slice(0, 12))
-        console.log('✅ All state setters called successfully')
       } catch (err) {
-        console.error('❌ Homepage data load error:', err)
+        console.warn('Homepage data load failed:', err)
       } finally {
         if (!cancelled) setIsLoading(false)
       }
