@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, withDbRetry } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Auto-seed the database on first access if it's empty
-    const productCount = await db.product.count()
+    const productCount = await withDbRetry(() => db.product.count(), 3, 1000)
     if (productCount === 0) {
       try {
         const origin = request.nextUrl.origin
@@ -135,8 +135,8 @@ export async function GET(request: NextRequest) {
         orderBy.createdAt = 'desc'
     }
 
-    const [products, total] = await Promise.all([
-      db.product.findMany({
+      const [products, total] = await Promise.all([
+      withDbRetry(() => db.product.findMany({
         where,
         include: {
           category: { select: { id: true, name: true, slug: true } },
@@ -147,8 +147,8 @@ export async function GET(request: NextRequest) {
         orderBy,
         skip,
         take: limit,
-      }),
-      db.product.count({ where }),
+      }), 3, 1000),
+      withDbRetry(() => db.product.count({ where }), 3, 1000),
     ])
 
     return NextResponse.json({

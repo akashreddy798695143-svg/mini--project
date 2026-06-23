@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, withDbRetry } from '@/lib/db'
 
 export async function GET() {
   try {
-    const categories = await db.category.findMany({
+    const categories = await withDbRetry(() => db.category.findMany({
       where: { isActive: true },
       include: {
         _count: {
@@ -19,7 +19,7 @@ export async function GET() {
         },
       },
       orderBy: { sortOrder: 'asc' },
-    })
+    }), 3, 1000)
 
     // Transform to include productCount
     const formatted = categories
